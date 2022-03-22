@@ -1,37 +1,6 @@
-#include <iostream>
-#include <mutex>
-#include <condition_variable>
+#include "Event.h"
 
 using namespace std;
-
-class Event {
-public:
-    void wait_event(const char* str) {
-        unique_lock<mutex> lock(mtx_);
-        cout << str << "Waiting" << endl;
-        cv_.wait(lock, [this]{ return ready; });
-
-        cout << str << "Run" << endl;
-    }
-
-    void set_event(const char* str) {
-        lock_guard<mutex> lock(mtx_);
-        cout << str << "Processed" << endl;
-        ready = true;
-        cv_.notify_all();
-    }
-
-    void reset_event(const char* str) {
-        lock_guard<mutex> lock(mtx_);
-        cout << str << "Reset" << endl;
-        ready = false;
-    }
-
-private:
-    bool ready = false;
-    mutex mtx_;
-    condition_variable cv_;
-};
 
 Event first, second, third;
 
@@ -59,11 +28,9 @@ int main() {
     cout << "Hardware Concurrency: " << thread::hardware_concurrency() << endl;
 
     thread t1(first_stage, "<First Stage>: ");
-    thread t2(second_stage, "<Second Stage 1> : ");
-    thread t3(second_stage, "<Second Stage 2> : ");
-    thread t4(third_stage, "<Third Stage> : ");
+    thread t2(second_stage, "<Second Stage> : ");
+    thread t3(third_stage, "<Third Stage> : ");
 
-    t4.join();
     t3.join();
     t2.join();
     t1.join();
